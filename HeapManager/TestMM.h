@@ -96,6 +96,7 @@ unsigned long long operator ""_GB( unsigned long long v )
 class IAllocator
 {
 public:
+    virtual ~IAllocator() = default;
     virtual void* Alloc( size_t size ) = 0;
     virtual void Dealloc( void* ptr ) = 0;
     virtual std::string Name() const = 0;
