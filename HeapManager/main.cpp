@@ -14,7 +14,15 @@ class AllocCpp : public IAllocator
 public:
     void* Alloc( size_t size ) override
     {
-        return ::operator new( size );
+        void* p = nullptr;
+        try
+        {
+            p = ::operator new( size );
+        }
+        catch( const std::bad_alloc& )
+        {
+        }
+        return p;
     }
     void Dealloc( void* ptr )
     {
@@ -108,6 +116,7 @@ int main()
         testmm.PushAllocator( new AllocCpp );
         testmm.PushAllocator( new AllocTemplate<ManagerMemory<FirstFit>> );
         testmm.PushAllocator( new AllocTemplate<ManagerMemory<BestFit>> );
+        testmm.PushAllocator( new AllocTemplate<ManagerMemory<BestFit2>> );
         testmm.PushAllocator( new AllocTemplate<ManagerMemory<NextFit>> );
 
         // количество выделяемых блоков

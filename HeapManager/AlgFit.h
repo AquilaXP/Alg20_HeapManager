@@ -11,7 +11,6 @@
 // Алгоритмы поиска подходящего блока
 //
 
-
 // Строит дерева для быстрого поиска
 class BestFit
 {
@@ -24,7 +23,7 @@ class BestFit
         }
     };
 public:
-    BestFit( BlockList& list ) : m_list( list )
+    BestFit( BlockList& list )
     {
     }
     Block* find( size_t size )
@@ -47,7 +46,42 @@ public:
     }
 private:
     std::set< Block*, LessBlock > m_tree;
-    BlockList& m_list;
+};
+
+// Строит дерева для быстрого поиска
+class BestFit2
+{
+    class LessBlock
+    {
+    public:
+        bool operator()( Block* lhs, Block* rhs ) const
+        {
+            return std::make_tuple( lhs->getSize() ) < std::make_tuple( rhs->getSize() );
+        }
+    };
+public:
+    BestFit2( BlockList& list )
+    {
+    }
+    Block* find( size_t size )
+    {
+        Block pattern;
+        pattern.info.size = size + getSizeHeaderBlock();
+        auto b = m_tree.lower_bound( &pattern );
+        if( b == m_tree.end() )
+            return nullptr;
+        return *b;
+    }
+    void add( Block* b )
+    {
+        m_tree.insert( b );
+    }
+    void remove( Block* b )
+    {
+        m_tree.erase( b );
+    }
+private:
+    std::multiset< Block*, LessBlock > m_tree;
 };
 
 // Находит первый подходящий
@@ -76,16 +110,15 @@ public:
     {
         // unused
     }
-private:
+protected:
     BlockList& m_list;
 };
 
-
-class NextFit
+class NextFit : public FirstFit
 {
 public:
     NextFit( BlockList& list )
-        : m_list( list ), prev(m_list.end())
+        : FirstFit( list ), prev(m_list.end())
     {
     }
     Block* find( size_t size )
@@ -119,10 +152,6 @@ public:
 
         return nullptr;
     }
-    void add( Block* b )
-    {
-        // unused
-    }
     void remove( Block* b )
     {
         if( std::addressof( *prev ) == b )
@@ -130,5 +159,4 @@ public:
     }
 private:
     BlockList::iterator prev;
-    BlockList& m_list;
 };
